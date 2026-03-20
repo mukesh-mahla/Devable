@@ -1,16 +1,20 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 
 const Page = ()=>{
+  const [value,setvalue] = useState("")
 
 const trpc = useTRPC()
 const invokes = useMutation(trpc.invoke.mutationOptions())
  
   return <div>
-    <Button onClick={()=>invokes.mutate({text:"hello@gmail.com"})}>
+    <Input value={value} onChange={(e)=>setvalue(e.target.value)}/>
+    <Button onClick={()=>invokes.mutate({value:value})}>
       background job
     </Button>
   </div>
