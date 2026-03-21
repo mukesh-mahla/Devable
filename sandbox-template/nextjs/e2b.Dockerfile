@@ -12,8 +12,13 @@ WORKDIR /home/user/nextjs-app
 
 RUN npx --yes create-next-app@16.2.0 . --yes
 
-RUN npx shadcn@latest init -y -b radix --force
-RUN npx shadcn@latest add --all -y
+# 1. Force npm to ignore peer dependency errors (CRITICAL for Next 15/React 19 + Radix UI)
+RUN npm config set legacy-peer-deps true
 
+# 2. Initialize using strict defaults (-d) so it never hangs on a hidden prompt
+RUN npx shadcn@latest init -d
+
+# 3. Add all components, auto-confirm (--yes), and overwrite conflicts
+RUN npx shadcn@latest add --all --yes --overwrite
 # Move the Nextjs app to the home directory and remove the nextjs-app directory
 RUN mv /home/user/nextjs-app/* /home/user/ && rm -rf /home/user/nextjs-app
