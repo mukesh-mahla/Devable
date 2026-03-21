@@ -13,7 +13,7 @@ const trpc = useTRPC()
 const invokes = useMutation(trpc.invoke.mutationOptions())
  
   return <div>
-    <Input value={value} onChange={(e)=>setvalue(e.target.value)}/>
+    <Input value={value} onChange={(e)=>setvalue(e.target.value)} placeholder="prompt"/>
     <Button onClick={()=>invokes.mutate({value:value})}>
       background job
     </Button>
