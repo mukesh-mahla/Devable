@@ -19,7 +19,6 @@ export const MessagesContainer = ({ projectId,activeFragment,setActiveFragment }
     const { data: messages } = useSuspenseQuery(trpc.messages.getMany.queryOptions({ projectId },{refetchInterval:5000}))
     
     // this is causing problem 
-
     // useEffect(()=>{
     //     const lastAssistantMessageWithFragment = messages.findLast((message)=>message.role === "ASSISTENT" && !!message.fragment)
     //     if(lastAssistantMessageWithFragment ){

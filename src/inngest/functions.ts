@@ -2,7 +2,7 @@ import { Sandbox } from "@e2b/code-interpreter";
 import { gemini, createAgent, createTool, createNetwork,type Tool } from "@inngest/agent-kit";
 import { inngest } from "./client";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
-import z, { object } from "zod";
+import z from "zod";
 import { PROMPT } from "@/prompts";
 import { prisma } from "@/lib/db";
 
@@ -29,7 +29,13 @@ export const codeAgentFunction = inngest.createFunction(
           generationConfig: {
             temperature: 0.1,
           },
+          toolConfig:{
+            functionCallingConfig:{
+              mode:"ANY"
+            }
+          }
         },
+        
       }),
       tools: [
         createTool({

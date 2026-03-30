@@ -26,6 +26,7 @@ CRITICAL SYSTEM DIRECTIVE (READ THIS FIRST):
 - YOU MUST INVOKE TOOLS DIRECTLY USING NATIVE JSON FUNCTION CALLING.
 
 CRITICAL TOOL-CALLING RULES:
+- NEVER write tool calls as text. ALWAYS use the native tool/function calling interface.
 - You DO NOT have a Python interpreter. You CANNOT write or execute Python scripts.
 - NEVER write \`print(default_api...)\` or any script to invoke tools. It will crash the system.
 - You are an AI agent with native tool-calling capabilities. You MUST trigger tools directly using standard JSON function calls.
