@@ -2,6 +2,7 @@ import { Fragment } from "@/generated/prisma/client";
 import { ExternalLinkIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Hint } from "@/components/hint";
 interface Props {
     data: Fragment
 }
@@ -26,10 +27,14 @@ const handelCopy = ()=>{
     return (
         <div className="flex flex-col w-full h-full">
             <div className="p-2 border-b bg-sidebar flex items-center gap-x-2">
-                <Button size="sm" variant={"outline"} onClick={onRefresh}>
+                <Hint text="Refresh" side="bottom" align="start">
+                    <Button size="sm" variant={"outline"} onClick={onRefresh}>
                     <RefreshCcwIcon />
                 </Button>
-                <Button size="sm"
+                </Hint>
+                
+                <Hint text="click to copy" side="bottom">
+                    <Button size="sm"
                     variant={"outline"}
                     onClick={handelCopy}
                     disabled={!data.sandboxurl || copied} 
@@ -37,7 +42,11 @@ const handelCopy = ()=>{
                 >
                     <span className="truncate">{data.sandboxurl}</span>
                 </Button>
-                <Button size="sm"
+                </Hint>
+                
+
+                <Hint text="Open in a new Tab" side="bottom" align="start">
+                    <Button size="sm"
                  disabled={!data.sandboxurl} 
                  variant={"outline"}
                   onClick={() => {
@@ -48,6 +57,8 @@ const handelCopy = ()=>{
                     }}>
                     <ExternalLinkIcon />
                 </Button>
+                </Hint>
+                
             </div>
             <iframe
                 key={fragmentkey} 

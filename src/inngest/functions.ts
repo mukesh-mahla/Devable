@@ -40,7 +40,7 @@ export const codeAgentFunction = inngest.createFunction(
       tools: [
         createTool({
           name: "terminal",
-          description: "NATIVE JSON TOOL: Execute shell commands directly. DO NOT write Python scripts. Pass the command string as a JSON argument.",
+          description: "Execute a shell command in the sandbox and return the output.",
           parameters: z.object({
             command: z.string().describe("Shell command"),
           }),
@@ -64,7 +64,7 @@ export const codeAgentFunction = inngest.createFunction(
         }),
         createTool({
           name: "createOrUpdateFiles",
-          description: "NATIVE JSON TOOL: Use this directly to write files. DO NOT write a Python or Shell script to call this. Pass the file path and raw code content directly as standard JSON arguments.",
+          description: "Write or update files in the sandbox. Pass the file path and content.",
           parameters: z.object({
             files: z.array(
               z.object({
@@ -89,11 +89,11 @@ export const codeAgentFunction = inngest.createFunction(
             } catch (e) {
               return "Error: " + e;
             }
-          },
+          },  
         }),
         createTool({
           name: "readfiles",
-          description: "NATIVE JSON TOOL: Read file contents directly. DO NOT write Python scripts. Pass the file paths as a JSON argument.",
+          description: "Read and return the contents of files in the sandbox by their file paths.",
           parameters: z.object({
             files: z.array(z.string()),
           }),
