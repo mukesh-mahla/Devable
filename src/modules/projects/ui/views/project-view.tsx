@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 import { FileExplorer } from "@/components/file-explorer"
+import { UserControl } from "@/components/user-control"
 
 interface Props {
     projectId: string,
@@ -62,7 +63,8 @@ export const ProjectView = ({ projectId }: Props) => {
                                 <Link href="/pricing">
                                     <CrownIcon /> Upgrade
                                 </Link>
-                            </Button>
+                                </Button>
+                                <UserControl/>
                         </div>
                     </div>
                     <TabsContent value="preview">
