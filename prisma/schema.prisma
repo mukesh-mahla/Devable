@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -53,4 +51,10 @@ model Project {
   updatedAt DateTime @updatedAt
 
   messages Message[]
+}
+
+model Usage{
+  key String @id
+  points Int
+  expire DateTime?
 }

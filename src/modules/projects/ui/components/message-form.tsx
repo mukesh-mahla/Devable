@@ -4,13 +4,16 @@ import TextareaAutosize from "react-textarea-autosize"
 import { Field } from "@/components/ui/field"
 import { z } from "zod"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import {  useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { ArrowUpIcon, Loader2Icon } from "lucide-react"
 import { useTRPC } from "@/trpc/client"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { Usage } from "./usage"
+import { useRouter } from "next/navigation"
+
 
 
 const formschema = z.object({
@@ -23,10 +26,13 @@ interface Props {
 
 export const MessageForm = ({ projectId }: Props) => {
     const [isFocused, setIsFocused] = useState(false)
-    const showUsage = false
+   const router = useRouter()
 
      const trpc = useTRPC()
      const queryClient = useQueryClient()
+
+     const {data:usage} = useQuery(trpc.usage.status.queryOptions())
+
     const form = useForm<z.infer<typeof formschema>>({
         resolver: zodResolver(formschema),
         defaultValues: {
@@ -39,12 +45,14 @@ export const MessageForm = ({ projectId }: Props) => {
         onSuccess:()=>{
             form.reset();
             queryClient.invalidateQueries(trpc.messages.getMany.queryOptions({projectId}))
-            // invalidate usage status
+            queryClient.invalidateQueries(trpc.usage.status.queryOptions())
 
         },
         onError:(error)=>{
-            // redirect to pricing page if specific error
             toast.error(error.message)
+            if(error.data?.code === "TOO_MANY_REQUESTS"){
+               router.push("/pricing")
+            }
         }
     }))
 
@@ -54,7 +62,7 @@ export const MessageForm = ({ projectId }: Props) => {
         })
        
     }
-
+ const showUsage = !!usage
     const isPending = createMessage.isPending
     const isDisabled = isPending || !form.formState.isValid
 
@@ -62,6 +70,9 @@ export const MessageForm = ({ projectId }: Props) => {
         isFocused && "shadow-xs",
         showUsage && "rounded-t-none"
     )}>
+        {showUsage && (
+            <Usage points={usage.remainingPoints} msBeforeNext={usage.msBeforeNext}/>
+        )}
         <Field>
             <TextareaAutosize {...form.register("value")} onFocus={() => setIsFocused(true)}
             disabled={isPending}

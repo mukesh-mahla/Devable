@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button"
 import { useUser } from "@clerk/nextjs"
 
 
-export const ProjectsList = ()=>{
+export const ProjectsList = () => {
     const trpc = useTRPC()
-    const {user} = useUser()
-    const {data:projects} = useQuery(trpc.projects.getMany.queryOptions())
-    if(!user){
+    const { user } = useUser()
+    const { data: projects } = useQuery(trpc.projects.getMany.queryOptions())
+    if (!user) {
         return null
     }
 
@@ -25,32 +25,32 @@ export const ProjectsList = ()=>{
                     <p className="text-sm text-muted-foreground">No projects found</p>
                 </div>
             )}
-               {projects?.map((project)=>(
-                <Button 
-                key={project.id}
-                variant={"outline"}
-                className="font-normal h-auto justify-start w-full text-start p-4 "
-                asChild
+            {projects?.map((project) => (
+                <Button
+                    key={project.id}
+                    variant={"outline"}
+                    className="font-normal h-auto justify-start w-full text-start p-4 "
+                    asChild
                 >
                     <Link href={`/projects/${project.id}`}>
-                    <div className="flex items-center gap-x-4 ">
-                        <Image
-                        src={"/logo.svg"}
-                        alt="devable"
-                        width={32}
-                        height={32}
-                        className="object-contain"
-                        />
-                        <div className="flex flex-col">
-                            <h3 className="font-medium truncate">
-                                {project.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">{formatDistanceToNow(project.updatedAt,{addSuffix:true})}</p>
+                        <div className="flex items-center gap-x-4 ">
+                            <Image
+                                src={"/logo.svg"}
+                                alt="devable"
+                                width={32}
+                                height={32}
+                                className="object-contain"
+                            />
+                            <div className="flex flex-col">
+                                <h3 className="font-medium truncate">
+                                    {project.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">{formatDistanceToNow(project.updatedAt, { addSuffix: true })}</p>
+                            </div>
                         </div>
-                    </div>
                     </Link>
                 </Button>
-               ))}
+            ))}
         </div>
     </div>
 }
