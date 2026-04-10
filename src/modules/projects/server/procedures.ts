@@ -30,6 +30,12 @@ export const projectsRouter = createTRPCRouter({
       return Existingprojects;
     }),
   getMany: protectedProcedure.query(async ({ ctx }) => {
+     if (!ctx.auth?.userId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+    });
+  }
+
     const projects = await prisma.project.findMany({
       where: {
         userId: ctx.auth.userId,
