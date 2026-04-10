@@ -148,7 +148,7 @@ export const codeAgentFunction = inngest.createFunction(
               console.error(
                 `command failed: ${e} \nstdout: ${buffers.stdout}\nstderr: ${buffers.stderr}`,
               );
-              return `command failed: ${e} \nstdout: ${buffers.stdout}\nstderr: ${buffers.stderr}`;
+              return `command failed: ${e} \nstdout: ${buffers.stdout}\nstderr:  ${buffers.stderr}`;
             }
           },
         }),
