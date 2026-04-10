@@ -1,20 +1,21 @@
 #!/bin/bash
 
-# This script runs during building the sandbox template
-# and makes sure the Next.js app is (1) running and (2) the `/` page is compiled
-function ping_server() {
-	counter=0
-	response=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000")
-	while [[ ${response} -ne 200 ]]; do
-	  let counter++
-	  if  (( counter % 20 == 0 )); then
-        echo "Waiting for server to start..."
-        sleep 0.1
-      fi
+set -e
 
-	  response=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000")
-	done
-}
+cd /home/user
 
-ping_server &
-cd /home/user && npx next dev --turbopack
+echo "Installing dependencies..."
+npm install --legacy-peer-deps
+
+echo "Starting Next.js dev server..."
+
+# ✅ Correct command (no --no-turbo)
+WATCHPACK_POLLING=true NEXT_DISABLE_ORIGIN_CHECK=1 npx next dev -p 3000 -H 0.0.0.0 > /tmp/next.log 2>&1 &
+
+# Wait until server is ready
+echo "Waiting for server to start..."
+until curl -s http://localhost:3000 > /dev/null; do
+  sleep 0.2
+done
+
+echo "Server is ready!"

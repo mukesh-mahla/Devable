@@ -1,24 +1,65 @@
-# You can use most Debian-based base images
-FROM node:21-slim
+FROM node:22-slim
 
-# Install curl
+# Install minimal dependencies
 RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Copy start script
 COPY compile_page.sh /compile_page.sh
 RUN chmod +x /compile_page.sh
 
-# Install dependencies and customize sandbox
-WORKDIR /home/user/nextjs-app
+# Set correct working directory
+WORKDIR /home/user
 
+# Limit memory (important for E2B stability)
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+
+# Create Next.js app directly in correct folder
 RUN npx --yes create-next-app@16.2.0 . --yes
 
-# 1. Force npm to ignore peer dependency errors (CRITICAL for Next 15/React 19 + Radix UI)
+# Fix peer deps
 RUN npm config set legacy-peer-deps true
 
-# 2. Initialize using strict defaults (-d) so it never hangs on a hidden prompt
+# Init shadcn (lightweight only)
 RUN npx shadcn@latest init -d
 
-# 3. Add all components, auto-confirm (--yes), and overwrite conflicts
-RUN npx shadcn@latest add --all --yes --overwrite
-# Move the Nextjs app to the home directory and remove the nextjs-app directory
-RUN mv /home/user/nextjs-app/* /home/user/ && rm -rf /home/user/nextjs-app
+# ✅ Inject SAFE Next.js config (CRITICAL)
+RUN printf '%s\n' \
+"import type { NextConfig } from 'next';" \
+"" \
+"const nextConfig: NextConfig = {" \
+"  allowedDevOrigins: ['*.e2b.app', '3000-*.e2b.app']," \
+"  experimental: { optimizeCss: false }," \
+"  assetPrefix: ''," \
+"  reactStrictMode: false," \
+"};" \
+"" \
+"export default nextConfig;" \
+> next.config.ts
+
+# ✅ Fix layout to avoid font/hydration issues
+RUN printf '%s\n' \
+"import './globals.css';" \
+"" \
+"export const metadata = {" \
+"  title: 'Next App'," \
+"  description: 'Generated in E2B sandbox'," \
+"};" \
+"" \
+"export default function RootLayout({ children }: { children: React.ReactNode }) {" \
+"  return (" \
+"    <html lang='en'>" \
+"      <body>{children}</body>" \
+"    </html>" \
+"  );" \
+"}" \
+> app/layout.tsx
+
+# Dev stability environment
+ENV WATCHPACK_POLLING=true
+ENV NEXT_DISABLE_ORIGIN_CHECK=1
+
+# Expose port
+EXPOSE 3000
+
+# Start script
+CMD ["/compile_page.sh"]

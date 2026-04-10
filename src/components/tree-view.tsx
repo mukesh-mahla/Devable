@@ -9,7 +9,7 @@ interface TreeViewProps {
 }
 
 export const TreeView = ({ data, value, onSelect }: TreeViewProps) => {
-    return <p>
+    return <div>
         <SidebarProvider >
             <Sidebar collapsible="none" className="w-full">
                 <SidebarContent>
@@ -31,7 +31,7 @@ export const TreeView = ({ data, value, onSelect }: TreeViewProps) => {
                 <SidebarRail />
             </Sidebar>
         </SidebarProvider>
-    </p>
+    </div>
 }
 
 interface TreeProps {

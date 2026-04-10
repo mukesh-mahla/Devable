@@ -23,10 +23,57 @@ export const codeAgentFunction = inngest.createFunction(
   { id: "code-agent", triggers: [{ event: "code-agent/run" }] },
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
-      const sandbox = await Sandbox.create("nextjs-test-3");
-      return sandbox.sandboxId;
+      const sandbox = await Sandbox.create("nextjs-test-1");
+      await sandbox.setTimeout(60_000 * 10 * 3);
+
+      // // Kill existing process, ignore errors
+      // try {
+      //   await sandbox.commands.run("pkill -f 'next' || true");
+      // } catch (e) {
+      //   // ignore
+      // }
+
+      //       await sandbox.commands.run(
+      //   "cd /home/user && npx next dev --turbopack -p 3001 > /tmp/next.log 2>&1",
+      //   { background: true }
+      // );
+
+      // await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // // Clear .next folder
+      // try {
+      //   await sandbox.commands.run("rm -rf /home/user/.next");
+      // } catch (e) {
+      //   // ignore
+      // }
+
+      // // Start dev server
+      // await sandbox.commands.run(
+      //   "cd /home/user && npx next dev --turbopack -p 3000 > /tmp/next.log 2>&1",
+      //   { background: true },
+      // );
+
+      // // Wait for it
+      // await new Promise((resolve) => setTimeout(resolve, 30000));
+
+      // Read logs safely
+
+      let logs = "";
+      try {
+        const result = await sandbox.commands.run("cat /tmp/next.log");
+        logs = result.stdout;
+      } catch (e) {
+        logs = "no logs";
+      }
+
+      return {
+        sandboxId: sandbox.sandboxId,
+        logs: logs,
+      };
     });
 
+    const actualSandboxId =
+      typeof sandboxId === "object" ? (sandboxId as any).sandboxId : sandboxId;
     const previousMessage = await step.run("get-previos-message", async () => {
       const formattedMessages: Message[] = [];
       const messages = await prisma.message.findMany({
@@ -34,6 +81,7 @@ export const codeAgentFunction = inngest.createFunction(
         orderBy: {
           createdAt: "desc",
         },
+        take: 5,
       });
       for (const message of messages) {
         formattedMessages.push({
@@ -42,7 +90,7 @@ export const codeAgentFunction = inngest.createFunction(
           content: message.content,
         });
       }
-      return formattedMessages;
+      return formattedMessages.reverse();
     });
 
     const state = createState<AgentState>(
@@ -84,7 +132,7 @@ export const codeAgentFunction = inngest.createFunction(
           handler: async ({ command }) => {
             const buffers = { stdout: "", stderr: "" };
             try {
-              const sandbox = await getSandbox(sandboxId);
+              const sandbox = await getSandbox(actualSandboxId);
 
               const result = await sandbox.commands.run(command, {
                 onStdout: (data: string) => {
@@ -120,7 +168,7 @@ export const codeAgentFunction = inngest.createFunction(
           handler: async ({ files }, { network }: Tool.Options<AgentState>) => {
             try {
               const updatedFiles = network?.state?.data?.files || {};
-              const sandbox = await getSandbox(sandboxId);
+              const sandbox = await getSandbox(actualSandboxId);
               for (const file of files) {
                 await sandbox.files.write(file.path, file.content);
                 updatedFiles[file.path] = file.content;
@@ -128,6 +176,7 @@ export const codeAgentFunction = inngest.createFunction(
               if (network) {
                 network.state.data.files = updatedFiles;
               }
+
               return `Successfully updated ${files.length} file(s).`;
             } catch (e) {
               return "Error: " + e;
@@ -144,7 +193,7 @@ export const codeAgentFunction = inngest.createFunction(
           // DELETED step.run WRAPPER
           handler: async ({ files }) => {
             try {
-              const sandbox = await getSandbox(sandboxId);
+              const sandbox = await getSandbox(actualSandboxId);
               const contents = [];
               for (const file of files) {
                 const content = await sandbox.files.read(file);
@@ -159,6 +208,10 @@ export const codeAgentFunction = inngest.createFunction(
       ],
       lifecycle: {
         onResponse: async ({ result, network }) => {
+          console.log(
+            "Files written so far:",
+            Object.keys(network?.state?.data?.files || {}),
+          );
           const lastAssistantMessgeText =
             lastAssistantTextMessageContent(result);
 
@@ -167,6 +220,7 @@ export const codeAgentFunction = inngest.createFunction(
               network.state.data.summary = lastAssistantMessgeText;
             }
           }
+
           return result;
         },
       },
@@ -193,7 +247,7 @@ export const codeAgentFunction = inngest.createFunction(
       description: "a fragment title generator",
       system: FRAGMENT_TITLE_PROMPT,
       model: gemini({
-        model: "gemini-2.5-flash", 
+        model: "gemini-2.5-flash",
         defaultParameters: {
           generationConfig: {
             temperature: 0.1,
@@ -207,7 +261,7 @@ export const codeAgentFunction = inngest.createFunction(
       description: "a response generator",
       system: RESPONSE_PROMPT,
       model: gemini({
-        model:"gemini-2.5-flash", 
+        model: "gemini-2.5-flash",
         defaultParameters: {
           generationConfig: {
             temperature: 0.1,
@@ -255,7 +309,7 @@ export const codeAgentFunction = inngest.createFunction(
       Object.keys(res.state.data.files || {}).length === 0;
 
     const sandboxUrl = await step.run("sandbox-url", async () => {
-      const sandbox = await getSandbox(sandboxId);
+      const sandbox = await getSandbox(actualSandboxId);
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });

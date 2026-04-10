@@ -1,7 +1,7 @@
 import { Fragment } from "@/generated/prisma/client";
 import { ExternalLinkIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Hint } from "@/components/hint";
 interface Props {
     data: Fragment
@@ -15,6 +15,9 @@ const [copied,setCopied] = useState(false)
 const onRefresh=()=>{
     setFragmentKey((prev)=>prev+1)
 }
+useEffect(() => {
+  setFragmentKey(prev => prev + 1)
+}, [data.sandboxurl])
 
 const handelCopy = ()=>{
     navigator.clipboard.writeText(data.sandboxurl)
@@ -60,13 +63,13 @@ const handelCopy = ()=>{
                 </Hint>
                 
             </div>
-            <iframe
-                key={fragmentkey} 
-                className="h-full w-full"
-                sandbox="allow-forms allow-scripts allow-same-origin"
-                loading="lazy"
-                src={data.sandboxurl}
-            />
+           <iframe
+    key={fragmentkey}
+    className="h-full w-full"
+    sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals allow-pointer-lock allow-top-navigation-by-user-activation"
+    loading="lazy"
+    src={data.sandboxurl}
+/>
         </div>
     )
 }
