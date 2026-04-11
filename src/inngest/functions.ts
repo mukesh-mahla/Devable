@@ -73,8 +73,10 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
     const actualSandboxId =
-      typeof sandboxId === "object" ? (sandboxId as any).sandboxId : sandboxId;
-    const previousMessage = await step.run("get-previos-message", async () => {
+       typeof sandboxId === "object" ? (sandboxId as any).sandboxId : sandboxId;
+
+       
+      const previousMessage = await step.run("get-previos-message", async () => {
       const formattedMessages: Message[] = [];
       const messages = await prisma.message.findMany({
         where: { projectId: event.data.projectId },

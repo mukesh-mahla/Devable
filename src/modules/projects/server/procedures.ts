@@ -30,11 +30,11 @@ export const projectsRouter = createTRPCRouter({
       return Existingprojects;
     }),
   getMany: protectedProcedure.query(async ({ ctx }) => {
-     if (!ctx.auth?.userId) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-    });
-  }
+    if (!ctx.auth?.userId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+      });
+    }
 
     const projects = await prisma.project.findMany({
       where: {
@@ -54,24 +54,24 @@ export const projectsRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-              await consumeCredits();
-            } catch (err) {
-              if (err instanceof Error) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message: "something went wrong",
-                });
-              } else {
-                throw new TRPCError({
-                  code: "TOO_MANY_REQUESTS",
-                  message: "you have run out of creadits",
-                });
-              }
-            }
+        await consumeCredits();
+      } catch (err) {
+        if (err instanceof Error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "something went wrong",
+          });
+        } else {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "you have run out of creadits",
+          });
+        }
+      }
       const createdProject = await prisma.project.create({
         data: {
           userId: ctx.auth.userId,
-          name: generateSlug(3, { format: "kebab" }),
+          name: input.value.split(" ").slice(0, 4).join(" ").toLowerCase(),
           messages: {
             create: {
               content: input.value,
